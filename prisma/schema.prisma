@@ -31,3 +31,18 @@ model Role {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Menu {
+  id       Int     @id @default(autoincrement())
+  name     String  @unique
+  path     String
+  label    String
+  isHidden Boolean
+  sort     Int
+  parentId Int?
+  parent   Menu?   @relation("MenuToMenu", fields: [parentId], references: [id])
+  children Menu[]  @relation("MenuToMenu")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

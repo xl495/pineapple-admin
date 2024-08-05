@@ -12,6 +12,10 @@ import { JwtStrategy } from './auth/jwt.strategy';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { RoleGuard } from './auth/role.guard';
+import { MenuModule } from './menu/menu.module';
+import { UploadModule } from './upload/upload.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -38,6 +42,12 @@ import { RoleGuard } from './auth/role.guard';
     }),
     AuthModule,
     UserModule,
+    MenuModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '../uploads'),
+      serveRoot: '/uploads', // 需要添加'/' 此处相当于添加前缀
+    }),
+    UploadModule,
   ],
   controllers: [AppController, AuthController],
   providers: [
