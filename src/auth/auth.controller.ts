@@ -1,4 +1,11 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpException,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
@@ -8,6 +15,8 @@ import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { StatusCodes } from 'http-status-codes';
+import { RefreshTokenDto } from './dto/refreshToken.dto';
 
 @ApiTags('认证')
 @Controller('auth')
@@ -53,31 +62,59 @@ export class AuthController {
     type: LoginDto,
   })
   @Public()
+  @HttpCode(StatusCodes.OK)
   async login(@Body() loginDto: LoginDto) {
+    if (!loginDto.email || !loginDto.password) {
+      throw new HttpException(
+        {
+          status: StatusCodes.INTERNAL_SERVER_ERROR,
+          message: '邮箱或密码不能为空',
+        },
+        StatusCodes.OK,
+      );
+    }
+
     const user = await this.authService.validateUser(
       loginDto.email,
       loginDto.password,
     );
 
     if (!user) {
-      return {
-        msg: '账号密码错误',
-      };
+      throw new HttpException(
+        {
+          status: StatusCodes.INTERNAL_SERVER_ERROR,
+          message: '账号密码错误',
+        },
+        StatusCodes.OK,
+      );
     }
 
-    const token = this.jwtService.sign(
+    const accessToken = this.authService.generateToken({
+      userId: user.id,
+      userEmail: user.email,
+    });
+
+    const refreshToken = this.authService.generateToken(
       {
         userId: user.id,
         userEmail: user.email,
       },
       {
-        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: '1d',
       },
     );
 
     return {
-      user: user,
-      token,
+      userInfo: user,
+      accessToken,
+      refreshToken,
     };
+  }
+
+  @Post('updateToken')
+  @HttpCode(StatusCodes.OK)
+  @Public()
+  async updateToken(@Body() refreshDto: RefreshTokenDto) {
+    return this.authService.refreshToken(refreshDto.refreshToken);
   }
 }

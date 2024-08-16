@@ -19,6 +19,8 @@ model User {
   name      String?
   nickName  String?
   password  String?
+  status    Int      @default(1)
+  gender    Int      @default(0)
   roles     Role[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -45,4 +47,13 @@ model Menu {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Dict {
+  id     Int    @id @default(autoincrement())
+  isRoot Int    @default(1)
+  code   String
+  label  String
+  value  Int?
+  sort   Int    @default(0)
 }

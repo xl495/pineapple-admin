@@ -16,6 +16,9 @@ import { MenuModule } from './menu/menu.module';
 import { UploadModule } from './upload/upload.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { RoleController } from './role/role.controller';
+import { RoleModule } from './role/role.module';
+import { DictModule } from './dict/dict.module';
 
 @Module({
   imports: [
@@ -34,7 +37,7 @@ import { join } from 'path';
           global: true,
           secret,
           signOptions: {
-            expiresIn: '1d',
+            expiresIn: '2h',
           },
         };
       },
@@ -48,8 +51,10 @@ import { join } from 'path';
       serveRoot: '/uploads', // 需要添加'/' 此处相当于添加前缀
     }),
     UploadModule,
+    RoleModule,
+    DictModule,
   ],
-  controllers: [AppController, AuthController],
+  controllers: [AppController, AuthController, RoleController],
   providers: [
     AppService,
     LocalStrategy,

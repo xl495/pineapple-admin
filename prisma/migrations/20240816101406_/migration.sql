@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE `dict` ADD COLUMN `parentId` INTEGER NULL,
+    ADD COLUMN `sort` INTEGER NOT NULL DEFAULT 0,
+    MODIFY `value` INTEGER NULL;

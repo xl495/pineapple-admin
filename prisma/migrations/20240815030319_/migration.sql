@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `user` ADD COLUMN `gender` INTEGER NOT NULL DEFAULT 0;

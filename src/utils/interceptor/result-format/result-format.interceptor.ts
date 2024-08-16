@@ -27,7 +27,7 @@ export class ResultFormatInterceptor implements NestInterceptor {
         }
 
         return {
-          code: code,
+          code: code === 200 ? 0 : code,
           message: message,
           data: data ?? null,
         };

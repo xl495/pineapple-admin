@@ -5,12 +5,15 @@ import { PrismaService } from 'nestjs-prisma';
 import { genSaltSync, hashSync, compareSync } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { StatusCodes } from 'http-status-codes';
+import { PaginationService } from '@/common/services/pagination.service';
+import { UserPaginationDto } from './dto/user-pagination.dto';
 
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
+    private paginationService: PaginationService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -31,7 +34,7 @@ export class UserService {
           message: '用户已存在',
           data: null,
         },
-        StatusCodes.CONFLICT,
+        StatusCodes.OK,
       );
     }
 
@@ -43,20 +46,62 @@ export class UserService {
 
     const hashedPassword = hashSync(password, salt);
 
-    return this.prisma.user.create({
+    if (data.roleList) {
+      data['roles'] = {
+        connect: data.roleList.map((item) => {
+          return {
+            name: item,
+          };
+        }),
+      };
+      delete data.roleList;
+    }
+
+    const createUser = await this.prisma.user.create({
       data: {
         ...data,
         password: hashedPassword,
       },
     });
+
+    return {
+      code: 0,
+      data: createUser,
+      message: '创建成功',
+    };
   }
 
-  findAll() {
-    return this.prisma.user.findMany({
+  async findAll(paginationDto: UserPaginationDto) {
+    const { skip, take } =
+      this.paginationService.getPaginationOptions(paginationDto);
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        email: {
+          contains: paginationDto.email,
+        },
+        nickName: {
+          contains: paginationDto.nickName,
+        },
+      },
+      skip,
+      take,
       include: {
         roles: true,
       },
     });
+
+    const totalCount = await this.prisma.user.count();
+
+    const paginationMeta = this.paginationService.createPaginationMeta(
+      totalCount,
+      paginationDto,
+    );
+
+    return {
+      ...paginationMeta,
+      list: users,
+    };
   }
 
   async findOne(id: number) {
@@ -74,16 +119,30 @@ export class UserService {
           message: '用户不存在',
           data: null,
         },
-        StatusCodes.NOT_FOUND,
+        StatusCodes.OK,
       );
     }
     return user;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
+    delete updateUserDto.password;
+    delete (updateUserDto as any).id;
+    if (updateUserDto.roleList) {
+      updateUserDto['roles'] = {
+        set: updateUserDto.roleList.map((item) => ({
+          name: item,
+        })),
+      };
+      delete updateUserDto.roleList;
+    }
+
     return this.prisma.user.update({
       where: { id },
       data: updateUserDto,
+      include: {
+        roles: true,
+      },
     });
   }
 
@@ -110,7 +169,7 @@ export class UserService {
           message: '用户不存在',
           data: null,
         },
-        StatusCodes.NOT_FOUND,
+        StatusCodes.OK,
       );
     }
 
@@ -121,7 +180,7 @@ export class UserService {
           message: '密码错误',
           data: null,
         },
-        StatusCodes.CONFLICT,
+        StatusCodes.OK,
       );
     }
     return user;

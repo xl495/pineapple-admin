@@ -1,8 +1,10 @@
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'nestjs-prisma';
+import { StatusCodes } from 'http-status-codes';
+import { UserEnum } from '@/enum';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -34,6 +36,28 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     if (!user) {
       return null;
+    }
+
+    if (user.status === UserEnum.status.DISABLED) {
+      throw new HttpException(
+        {
+          status: StatusCodes.FORBIDDEN,
+          message: '用户已被禁用',
+          data: null,
+        },
+        StatusCodes.OK,
+      );
+    }
+
+    if (user.status === UserEnum.status.INACTIVE) {
+      throw new HttpException(
+        {
+          status: StatusCodes.FORBIDDEN,
+          message: '用户未激活',
+          data: null,
+        },
+        StatusCodes.OK,
+      );
     }
 
     return { ...payload, ...user };

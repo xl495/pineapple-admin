@@ -39,7 +39,7 @@ export class AuthGuard implements CanActivate {
           status: StatusCodes.UNAUTHORIZED,
           message: '未登录',
         },
-        StatusCodes.UNAUTHORIZED,
+        StatusCodes.OK,
       );
     }
     try {

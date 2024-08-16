@@ -35,7 +35,7 @@ export class RoleGuard implements CanActivate {
           status: StatusCodes.FORBIDDEN,
           message: '无权限',
         },
-        StatusCodes.FORBIDDEN,
+        StatusCodes.OK,
       );
     }
 

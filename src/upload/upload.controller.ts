@@ -12,6 +12,7 @@ import { extname } from 'path';
 import { UploadService } from './upload.service';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { CreateUploadDto } from './dto/create-upload.dto';
+import { StatusCodes } from 'http-status-codes';
 
 @Controller('upload')
 @ApiTags('上传')
@@ -40,10 +41,10 @@ export class UploadController {
     if (!file) {
       throw new HttpException(
         {
-          status: 400,
+          status: StatusCodes.BAD_REQUEST,
           message: 'No file uploaded!',
         },
-        400,
+        StatusCodes.OK,
       );
     }
     return {

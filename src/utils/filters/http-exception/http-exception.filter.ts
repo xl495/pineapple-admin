@@ -22,7 +22,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       // Nestjs预设的错误
       status = exception.getStatus();
       const results = exception.getResponse() as any;
-      code = results?.status;
+      code = results?.status || 0;
       message = results?.message ?? getReasonPhrase(code);
 
       // 参数校验错误，默认都是BadRequestException

@@ -39,7 +39,7 @@ export class MenuController {
           status: StatusCodes.NOT_FOUND,
           message: `菜单项 id ${id} 不存在`,
         },
-        StatusCodes.NOT_FOUND,
+        StatusCodes.OK,
       );
     }
     return this.menuService.findOne(+id);

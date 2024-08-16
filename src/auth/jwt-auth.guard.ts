@@ -27,11 +27,15 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   handleRequest(err: any, user: any) {
     // 自定义错误信息
+
     if (err || !user) {
-      throw new UnauthorizedException({
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: '未登录',
-      });
+      throw (
+        err ||
+        new UnauthorizedException({
+          statusCode: StatusCodes.UNAUTHORIZED,
+          message: '未登录',
+        })
+      );
     }
     return user;
   }
